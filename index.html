@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מנוע חיפוש אקדמי - הבונים החופשיים</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Spectral:wght@300;400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #1a1410;
+            --primary-bronze: #8b6914;
+            --accent-gold: #d4af37;
+            --bg-parchment: #f4efe7;
+            --text-primary: #2c2416;
+            --text-secondary: #5c4f3d;
+            --border-subtle: #c9b896;
+            --shadow-soft: rgba(139, 105, 20, 0.15);
+        }
+
+        body {
+            font-family: 'Spectral', serif;
+            background: linear-gradient(135deg, #f4efe7 0%, #e8dcc8 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(to bottom, rgba(26, 20, 16, 0.95), rgba(26, 20, 16, 0.85)),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%231a1410" width="100" height="100"/><path d="M50 10 L90 90 L10 90 Z" fill="none" stroke="%238b6914" stroke-width="2" opacity="0.3"/><circle cx="50" cy="50" r="20" fill="none" stroke="%23d4af37" stroke-width="1" opacity="0.2"/></svg>');
+            border-radius: 12px;
+            box-shadow: 0 10px 40px var(--shadow-soft);
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-bronze), var(--accent-gold), var(--primary-bronze));
+        }
+
+        h1 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: var(--bg-parchment);
+            font-weight: 300;
+            letter-spacing: 0.1em;
+        }
+
+        .search-section {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px var(--shadow-soft);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .search-header {
+            margin-bottom: 2rem;
+        }
+
+        .search-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.8rem;
+            color: var(--primary-dark);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .search-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .search-input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+            font-family: 'IBM Plex Sans', sans-serif;
+            transition: all 0.3s ease;
+            background: var(--bg-parchment);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-bronze);
+            box-shadow: 0 0 0 3px rgba(139, 105, 20, 0.1);
+        }
+
+        .translation-hint {
+            background: #fff9e6;
+            border: 1px solid #ffd966;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #8b6914;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-all-btn {
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, #2d5016, #4a7c23);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'IBM Plex Sans', sans-serif;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(45, 80, 22, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .search-all-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(45, 80, 22, 0.5);
+            background: linear-gradient(135deg, #3a6b1e, #5d9c2b);
+        }
+
+        .search-all-btn .icon {
+            font-size: 1.5rem;
+        }
+
+        .filters-section {
+            background: var(--bg-parchment);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border: 2px solid var(--border-subtle);
+        }
+
+        .filters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .filters-title {
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 1.1rem;
+            color: var(--primary-bronze);
+            font-weight: 600;
+        }
+
+        .toggle-filters-btn {
+            background: none;
+            border: none;
+            color: var(--primary-bronze);
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'IBM Plex Sans', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-filters-btn:hover {
+            color: var(--accent-gold);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-group {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .filter-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+            display: block;
+            font-family: 'IBM Plex Sans', sans-serif;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: var(--bg-parchment);
+        }
+
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.3rem;
+            cursor: pointer;
+        }
+
+        .filter-checkbox input {
+            cursor: pointer;
+            accent-color: var(--primary-bronze);
+        }
+
+        .search-engines-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .search-engine-btn {
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary-bronze), var(--accent-gold));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'IBM Plex Sans', sans-serif;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(139, 105, 20, 0.3);
+            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .search-engine-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 105, 20, 0.4);
+        }
+
+        .search-engine-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .search-engine-btn .icon {
+            font-size: 1.3rem;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 2rem 0;
+            color: var(--text-secondary);
+            font-weight: 600;
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--border-subtle), transparent);
+        }
+
+        .divider::before {
+            right: 0;
+        }
+
+        .divider::after {
+            left: 0;
+        }
+
+        .history-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px var(--shadow-soft);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .history-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        .clear-history-btn {
+            padding: 0.5rem 1rem;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .clear-history-btn:hover {
+            background: #c82333;
+        }
+
+        .history-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-item {
+            background: var(--bg-parchment);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-subtle);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .history-item:hover {
+            background: rgba(139, 105, 20, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .suggestions-section {
+            background: #e8f5e9;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border: 2px solid #4caf50;
+        }
+
+        .suggestions-title {
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 1rem;
+            color: #2e7d32;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .suggestions-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .suggestion-tag {
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid #4caf50;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-tag:hover {
+            background: #4caf50;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .keywords-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px var(--shadow-soft);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .keywords-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .keywords-category {
+            margin-bottom: 1.5rem;
+        }
+
+        .category-label {
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 1.1rem;
+            color: var(--primary-bronze);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .keywords-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .keyword-tag {
+            background: linear-gradient(135deg, rgba(139, 105, 20, 0.1), rgba(212, 175, 55, 0.1));
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-subtle);
+            font-size: 0.95rem;
+            text-align: center;
+            font-family: 'IBM Plex Sans', sans-serif;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .keyword-tag:hover {
+            background: linear-gradient(135deg, rgba(139, 105, 20, 0.2), rgba(212, 175, 55, 0.2));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow-soft);
+        }
+
+        .sources-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px var(--shadow-soft);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .sources-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.8rem;
+            color: var(--primary-dark);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .source-category {
+            margin-bottom: 2rem;
+        }
+
+        .category-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.3rem;
+            color: var(--primary-bronze);
+            margin-bottom: 1rem;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-subtle);
+            padding-bottom: 0.5rem;
+        }
+
+        .source-card {
+            background: var(--bg-parchment);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-right: 4px solid var(--primary-bronze);
+            transition: all 0.3s ease;
+        }
+
+        .source-card:hover {
+            box-shadow: 0 8px 24px var(--shadow-soft);
+            transform: translateX(-4px);
+        }
+
+        .source-name {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.2rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .source-description {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .source-link {
+            color: var(--primary-bronze);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-family: 'IBM Plex Sans', sans-serif;
+        }
+
+        .source-link:hover {
+            color: var(--accent-gold);
+            transform: translateX(-4px);
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border: 2px solid #2196F3;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #0d47a1;
+        }
+
+        .info-box strong {
+            font-size: 1.1rem;
+        }
+
+        .info-box ul {
+            margin-top: 0.75rem;
+            margin-right: 1.5rem;
+        }
+
+        .info-box li {
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .search-input-group {
+                flex-direction: column;
+            }
+
+            .search-engines-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-all-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const FreemasonResearchEngine = () => {
+            const [searchQuery, setSearchQuery] = useState('');
+            const [translatedQuery, setTranslatedQuery] = useState('');
+            const [searchHistory, setSearchHistory] = useState([]);
+            const [showFilters, setShowFilters] = useState(false);
+            const [filters, setFilters] = useState({
+                sourceType: 'all',
+                yearRange: 'all',
+                language: 'all',
+                contentType: 'all',
+                selectedEngines: {
+                    scholar: true,
+                    jstor: true,
+                    archive: true,
+                    loc: true,
+                    worldcat: true,
+                    google: true
+                }
+            });
+
+            // Load search history from localStorage
+            useEffect(() => {
+                const saved = localStorage.getItem('searchHistory');
+                if (saved) {
+                    setSearchHistory(JSON.parse(saved));
+                }
+            }, []);
+
+            // Save search history
+            const saveToHistory = (query) => {
+                if (!query.trim()) return;
+                const newHistory = [query, ...searchHistory.filter(q => q !== query)].slice(0, 10);
+                setSearchHistory(newHistory);
+                localStorage.setItem('searchHistory', JSON.stringify(newHistory));
+            };
+
+            // Clear history
+            const clearHistory = () => {
+                setSearchHistory([]);
+                localStorage.removeItem('searchHistory');
+            };
+
+            // Generate smart suggestions based on query
+            const getSmartSuggestions = (query) => {
+                const lowerQuery = query.toLowerCase();
+                const suggestions = [];
+
+                if (lowerQuery.includes('pike') || lowerQuery.includes('albert')) {
+                    suggestions.push('Morals and Dogma', 'Scottish Rite', '33rd degree');
+                }
+                if (lowerQuery.includes('anderson') || lowerQuery.includes('james')) {
+                    suggestions.push('Constitutions 1723', 'Grand Lodge England');
+                }
+                if (lowerQuery.includes('mozart')) {
+                    suggestions.push('Magic Flute', 'Masonic music', '18th century');
+                }
+                if (lowerQuery.includes('washington')) {
+                    suggestions.push('Founding Fathers', 'American Revolution', 'Alexandria Lodge');
+                }
+                if (lowerQuery.includes('symbol')) {
+                    suggestions.push('Square and Compass', 'All-seeing eye', 'Sacred geometry');
+                }
+                if (lowerQuery.includes('ritual')) {
+                    suggestions.push('Degrees', 'Initiation ceremony', 'Lodge practices');
+                }
+
+                return suggestions.length > 0 ? suggestions : ['history', 'symbols', 'famous members'];
+            };
+
+            const [suggestions, setSuggestions] = useState([]);
+
+            useEffect(() => {
+                if (searchQuery) {
+                    setSuggestions(getSmartSuggestions(searchQuery));
+                } else {
+                    setSuggestions([]);
+                }
+            }, [searchQuery]);
+
+            const translationDict = {
+                'הבונים החופשיים': 'freemasons',
+                'בונים חופשיים': 'freemasons',
+                'החופשיים': 'freemasons',
+                'בנייה חופשית': 'freemasonry',
+                'לשכת הבונים': 'masonic lodge',
+                'לשכה': 'lodge',
+                'טקסים': 'rituals',
+                'טקס': 'ritual',
+                'סמלים': 'symbols',
+                'סמל': 'symbol',
+                'היסטוריה': 'history',
+                'פילוסופיה': 'philosophy',
+                'חברה סודית': 'secret society',
+                'ארגון': 'organization',
+                'מסורת': 'tradition',
+                'מסורות': 'traditions',
+                'שיטות': 'practices',
+                'אגדות': 'legends',
+                'מיתוסים': 'myths',
+                'דרגות': 'degrees',
+                'חניכה': 'initiation',
+                'טקס חניכה': 'initiation ritual',
+                'אח': 'brother',
+                'אחים': 'brethren',
+                'מאסטר': 'master',
+                'גראנד מאסטר': 'grand master',
+                'מחקר': 'research',
+                'ארכיון': 'archive',
+                'מסמכים': 'documents',
+                'ספרים': 'books',
+                'כתבי יד': 'manuscripts',
+                'בונה': 'mason',
+                'בונים': 'masons',
+                'אילומינטי': 'illuminati',
+                'האילומינטי': 'illuminati',
+                'טמפלרים': 'templars',
+                'הטמפלרים': 'knights templar',
+                'רוזנקרויץ': 'rosicrucian',
+                'קבלה': 'kabbalah',
+                'הרמטיקה': 'hermetic',
+                'אזוטרי': 'esoteric',
+                'סודי': 'secret',
+                'מיסטי': 'mystical',
+                'אוקולטי': 'occult'
+            };
+
+            const keywords = {
+                general: {
+                    label: '🔍 נושאים כלליים',
+                    words: ['הבונים החופשיים', 'בנייה חופשית', 'לשכת הבונים', 'טקסים בנאיים', 'סמלים בנאיים', 'freemason', 'freemasonry', 'masonic lodge', 'masonic ritual', 'masonic symbols']
+                },
+                writers: {
+                    label: '✍️ סופרים ומחברים בנאיים',
+                    words: [
+                        'James Anderson',
+                        'Albert Pike',
+                        'Albert Mackey',
+                        'Manly P Hall',
+                        'Arthur Edward Waite',
+                        'William Preston',
+                        'Thomas Smith Webb',
+                        'Robert Freke Gould',
+                        'Joseph Fort Newton',
+                        'Henry Wilson Coil'
+                    ]
+                },
+                historical: {
+                    label: '👑 דמויות היסטוריות - מנהיגים',
+                    words: [
+                        'George Washington',
+                        'Benjamin Franklin',
+                        'Winston Churchill',
+                        'Theodore Roosevelt',
+                        'Harry S Truman',
+                        'Franklin D Roosevelt',
+                        'King Edward VII'
+                    ]
+                },
+                artists: {
+                    label: '🎨 אמנים ומוזיקאים',
+                    words: [
+                        'Wolfgang Amadeus Mozart',
+                        'Duke Ellington',
+                        'Louis Armstrong',
+                        'Mark Twain',
+                        'Arthur Conan Doyle',
+                        'Rudyard Kipling'
+                    ]
+                }
+            };
+
+            const searchEngines = [
+                {
+                    id: 'scholar',
+                    name: 'Google Scholar',
+                    icon: '🎓',
+                    baseUrl: 'https://scholar.google.com/scholar?q=',
+                    description: 'מאמרים אקדמיים'
+                },
+                {
+                    id: 'jstor',
+                    name: 'JSTOR',
+                    icon: '📚',
+                    baseUrl: 'https://www.jstor.org/action/doBasicSearch?Query=',
+                    description: 'מאמרים מדעיים'
+                },
+                {
+                    id: 'archive',
+                    name: 'Internet Archive',
+                    icon: '📖',
+                    baseUrl: 'https://archive.org/search.php?query=',
+                    description: 'ספרים דיגיטליים'
+                },
+                {
+                    id: 'loc',
+                    name: 'Library of Congress',
+                    icon: '🏛️',
+                    baseUrl: 'https://www.loc.gov/search/?q=',
+                    description: 'ספרייה לאומית'
+                },
+                {
+                    id: 'worldcat',
+                    name: 'WorldCat',
+                    icon: '🌍',
+                    baseUrl: 'https://www.worldcat.org/search?q=',
+                    description: 'קטלוג עולמי'
+                },
+                {
+                    id: 'google',
+                    name: 'Google Academic',
+                    icon: '🔍',
+                    baseUrl: 'https://www.google.com/search?q=',
+                    description: 'חיפוש כללי'
+                }
+            ];
+
+            const academicSources = {
+                archives: [
+                    {
+                        name: 'Grand Lodge of Scotland Archives',
+                        url: 'https://www.grandlodgescotland.org/library-and-museum',
+                        description: 'ארכיון הלשכה הגדולה של סקוטלנד - מסמכים היסטוריים מהמאה ה-16 ועד היום'
+                    },
+                    {
+                        name: 'Library and Museum of Freemasonry (London)',
+                        url: 'https://freemasonry.london.museum',
+                        description: 'ספרייה ומוזיאון הבונים החופשיים בלונדון - אוסף מקיף'
+                    },
+                    {
+                        name: 'United Grand Lodge of England',
+                        url: 'https://www.ugle.org.uk',
+                        description: 'הלשכה הגדולה המאוחדת של אנגליה'
+                    },
+                    {
+                        name: 'Phoenixmasonry Museum',
+                        url: 'http://www.phoenixmasonry.org',
+                        description: 'מוזיאון דיגיטלי עם מסמכים נדירים'
+                    }
+                ],
+                academic: [
+                    {
+                        name: 'Pietre-Stones Review',
+                        url: 'http://www.freemasons-freemasonry.com',
+                        description: 'כתב עת אקדמי מקוון'
+                    },
+                    {
+                        name: 'The Scottish Rite Journal',
+                        url: 'https://scottishrite.org/the-scottish-rite-journal',
+                        description: 'כתב עת של הסקוטיש רייט'
+                    },
+                    {
+                        name: 'Journal for Research into Freemasonry',
+                        url: 'https://equinoxpub.com/home/journal-research-freemasonry-esotericism',
+                        description: 'כתב עת אקדמי peer-reviewed'
+                    }
+                ]
+            };
+
+            const isHebrew = (text) => /[\u0590-\u05FF]/.test(text);
+            const removeHebrew = (text) => text.replace(/[\u0590-\u05FF]/g, '').trim();
+
+            const translateToEnglish = (text) => {
+                let translated = text;
+                Object.entries(translationDict).forEach(([hebrew, english]) => {
+                    const regex = new RegExp(hebrew, 'gi');
+                    translated = translated.replace(regex, ' ' + english + ' ');
+                });
+                translated = removeHebrew(translated);
+                return translated.replace(/\s+/g, ' ').trim();
+            };
+
+            useEffect(() => {
+                if (searchQuery && isHebrew(searchQuery)) {
+                    setTranslatedQuery(translateToEnglish(searchQuery));
+                } else {
+                    setTranslatedQuery('');
+                }
+            }, [searchQuery]);
+
+            const handleKeywordClick = (keyword) => setSearchQuery(keyword);
+
+            const getSearchQuery = () => {
+                let query = searchQuery.trim();
+                if (isHebrew(query)) {
+                    query = translateToEnglish(query);
+                }
+                
+                // Add filters to query
+                if (filters.yearRange !== 'all') {
+                    query += ` ${filters.yearRange}`;
+                }
+                
+                return query.replace(/\s+/g, ' ').trim();
+            };
+
+            const handleSearchEngine = (engine) => {
+                if (!searchQuery.trim()) {
+                    alert('אנא הזן מילת חיפוש');
+                    return;
+                }
+                const finalQuery = getSearchQuery();
+                saveToHistory(searchQuery);
+                window.open(engine.baseUrl + encodeURIComponent(finalQuery), '_blank');
+            };
+
+            const handleSearchAll = () => {
+                if (!searchQuery.trim()) {
+                    alert('אנא הזן מילת חיפוש');
+                    return;
+                }
+                const query = encodeURIComponent(getSearchQuery());
+                saveToHistory(searchQuery);
+                
+                searchEngines.forEach((engine, index) => {
+                    if (filters.selectedEngines[engine.id]) {
+                        setTimeout(() => window.open(engine.baseUrl + query, '_blank'), index * 300);
+                    }
+                });
+            };
+
+            return (
+                <div className="app-container">
+                    <header>
+                        <h1>מנוע חיפוש אקדמי מתקדם</h1>
+                        <p className="subtitle">הבונים החופשיים · מחקר ואקדמיה</p>
+                    </header>
+
+                    <div className="info-box">
+                        <strong>💡 תכונות חדשות:</strong>
+                        <ul>
+                            <li><strong>פילטרים מתקדמים:</strong> סנן לפי סוג מקור, שנה, שפה וסוג תוכן</li>
+                            <li><strong>שמירת חיפושים:</strong> החיפושים האחרונים נשמרים אוטומטית</li>
+                            <li><strong>המלצות חכמות:</strong> הצעות חיפוש קשורות בהתאם לשאילתה</li>
+                            <li><strong>בחירת מנועים:</strong> בחר אילו מנועי חיפוש לחפש</li>
+                        </ul>
+                    </div>
+
+                    {searchHistory.length > 0 && (
+                        <div className="history-section">
+                            <div className="history-header">
+                                <h3 className="history-title">🕒 חיפושים אחרונים</h3>
+                                <button className="clear-history-btn" onClick={clearHistory}>
+                                    נקה היסטוריה
+                                </button>
+                            </div>
+                            <div className="history-items">
+                                {searchHistory.map((item, idx) => (
+                                    <div 
+                                        key={idx} 
+                                        className="history-item"
+                                        onClick={() => setSearchQuery(item)}
+                                    >
+                                        🔍 {item}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="search-section">
+                        <div className="search-header">
+                            <h2 className="search-title">חיפוש אקדמי מתקדם</h2>
+                            <p className="search-subtitle">חפש נושאים, דמויות וספרים במקורות אקדמיים</p>
+                        </div>
+
+                        <div className="search-input-group">
+                            <input 
+                                type="text"
+                                className="search-input"
+                                placeholder="הזן מילות חיפוש..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleSearchAll()}
+                            />
+                            <button className="search-all-btn" onClick={handleSearchAll}>
+                                <span className="icon">🚀</span>
+                                <span>חפש בכל המקורות</span>
+                            </button>
+                        </div>
+
+                        {translatedQuery && (
+                            <div className="translation-hint">
+                                <span>🔄</span>
+                                <span><strong>תרגום:</strong> {translatedQuery}</span>
+                            </div>
+                        )}
+
+                        {suggestions.length > 0 && (
+                            <div className="suggestions-section">
+                                <div className="suggestions-title">💡 הצעות חיפוש קשורות:</div>
+                                <div className="suggestions-grid">
+                                    {suggestions.map((sug, idx) => (
+                                        <div 
+                                            key={idx}
+                                            className="suggestion-tag"
+                                            onClick={() => setSearchQuery(searchQuery + ' ' + sug)}
+                                        >
+                                            + {sug}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="filters-section">
+                            <div className="filters-header">
+                                <span className="filters-title">⚙️ פילטרים מתקדמים</span>
+                                <button 
+                                    className="toggle-filters-btn"
+                                    onClick={() => setShowFilters(!showFilters)}
+                                >
+                                    {showFilters ? '▲ הסתר' : '▼ הצג'}
+                                </button>
+                            </div>
+                            
+                            {showFilters && (
+                                <div className="filters-grid">
+                                    <div className="filter-group">
+                                        <label className="filter-label">טווח שנים</label>
+                                        <select 
+                                            className="filter-select"
+                                            value={filters.yearRange}
+                                            onChange={(e) => setFilters({...filters, yearRange: e.target.value})}
+                                        >
+                                            <option value="all">כל השנים</option>
+                                            <option value="2020-2024">2020-2024</option>
+                                            <option value="2010-2019">2010-2019</option>
+                                            <option value="2000-2009">2000-2009</option>
+                                            <option value="1990-1999">1990-1999</option>
+                                            <option value="before 1990">לפני 1990</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="filter-group">
+                                        <label className="filter-label">שפה</label>
+                                        <select 
+                                            className="filter-select"
+                                            value={filters.language}
+                                            onChange={(e) => setFilters({...filters, language: e.target.value})}
+                                        >
+                                            <option value="all">כל השפות</option>
+                                            <option value="en">אנגלית</option>
+                                            <option value="he">עברית</option>
+                                            <option value="fr">צרפתית</option>
+                                            <option value="de">גרמנית</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="filter-group">
+                                        <label className="filter-label">סוג תוכן</label>
+                                        <select 
+                                            className="filter-select"
+                                            value={filters.contentType}
+                                            onChange={(e) => setFilters({...filters, contentType: e.target.value})}
+                                        >
+                                            <option value="all">הכל</option>
+                                            <option value="articles">מאמרים</option>
+                                            <option value="books">ספרים</option>
+                                            <option value="manuscripts">כתבי יד</option>
+                                            <option value="archives">ארכיונים</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="filter-group">
+                                        <label className="filter-label">בחר מנועים</label>
+                                        {searchEngines.map(engine => (
+                                            <label key={engine.id} className="filter-checkbox">
+                                                <input 
+                                                    type="checkbox"
+                                                    checked={filters.selectedEngines[engine.id]}
+                                                    onChange={(e) => setFilters({
+                                                        ...filters,
+                                                        selectedEngines: {
+                                                            ...filters.selectedEngines,
+                                                            [engine.id]: e.target.checked
+                                                        }
+                                                    })}
+                                                />
+                                                <span>{engine.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="divider">או בחר מנוע חיפוש ספציפי</div>
+
+                        <div className="search-engines-grid">
+                            {searchEngines.map((engine, idx) => (
+                                <button 
+                                    key={idx}
+                                    className={`search-engine-btn ${!filters.selectedEngines[engine.id] ? 'disabled' : ''}`}
+                                    onClick={() => handleSearchEngine(engine)}
+                                    disabled={!filters.selectedEngines[engine.id]}
+                                >
+                                    <span className="icon">{engine.icon}</span>
+                                    <div style={{flex: 1, textAlign: 'right'}}>
+                                        <div>{engine.name}</div>
+                                        <div style={{fontSize: '0.8rem', opacity: 0.9}}>{engine.description}</div>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="keywords-section">
+                        <h3 className="keywords-title">מילות חיפוש מומלצות (לחץ להוספה)</h3>
+                        
+                        {Object.entries(keywords).map(([category, {label, words}]) => (
+                            <div key={category} className="keywords-category">
+                                <span className="category-label">{label}</span>
+                                <div className="keywords-grid">
+                                    {words.map((word, idx) => (
+                                        <div 
+                                            key={`${category}-${idx}`} 
+                                            className="keyword-tag" 
+                                            onClick={() => handleKeywordClick(word)}
+                                        >
+                                            {word}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="sources-section">
+                        <h3 className="sources-title">מקורות אקדמיים מומלצים</h3>
+
+                        {Object.entries({
+                            archives: { title: '📚 ארכיונים ולשכות', data: academicSources.archives },
+                            academic: { title: '🎓 כתבי עת אקדמיים', data: academicSources.academic }
+                        }).map(([key, {title, data}]) => (
+                            <div key={key} className="source-category">
+                                <h4 className="category-title">{title}</h4>
+                                {data.map((source, idx) => (
+                                    <div key={idx} className="source-card">
+                                        <div className="source-name">{source.name}</div>
+                                        <p className="source-description">{source.description}</p>
+                                        <a href={source.url} target="_blank" rel="noopener noreferrer" className="source-link">
+                                            ← גישה למקור
+                                        </a>
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<FreemasonResearchEngine />, document.getElementById('root'));
+    </script>
+</body>
+</html>
